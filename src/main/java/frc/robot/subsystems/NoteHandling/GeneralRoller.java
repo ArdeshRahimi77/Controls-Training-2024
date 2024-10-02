@@ -12,6 +12,8 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import frc.robot.subsystems.NoteHandling.GeneralRoller.GeneralRollerStates;
+
 public class GeneralRoller extends SubsystemBase {
     /*
      * 
@@ -49,9 +51,10 @@ public class GeneralRoller extends SubsystemBase {
 
   // You generally only need one motor for the rollers on Vivaldi
   private final CANSparkMax m_spark;
+  private GeneralRollerStates freeDiddy = GeneralRollerStates.StateForwardFast;
 
   // Hint: motors need a voltage! You'll still need to set the motor's voltage yourself, though.
-  private double desiredVoltage = 0;
+  private double desiredVoltage = 9;
 
   public GeneralRoller(int port, boolean setInverted) {
     m_spark = new CANSparkMax(port, MotorType.kBrushless);
@@ -65,6 +68,15 @@ public class GeneralRoller extends SubsystemBase {
 
   @Override
   public void periodic() {
+    if (freeDiddy == GeneralRollerStates.StateForward){
+      m_spark.setVoltage(5);
+    } else if (freeDiddy == GeneralRollerStates.StateOff){
+      m_spark.setVoltage(0);
+    } else if (freeDiddy == GeneralRollerStates.StateReverse){
+      m_spark.setVoltage(-2);
+    } else if (freeDiddy == GeneralRollerStates.StateForward){
+      m_spark.setVoltage(3);
+    }
     //This function runs ~20 times per second. It is in every subsytem, and is effectively your "while" loop or "update" loop.
     //Thus, the usage of while(true) and similar loops is generally avoided--- they can cause memory-leaks and other jank! Instead, put looping code here. 
   }
@@ -72,7 +84,7 @@ public class GeneralRoller extends SubsystemBase {
   public double getCurrent() {
     //hint: this method wants you to return the Amperage (Current, or A) to the motor. the LinearFilter is useful here.
 
-    return 1.0; //replace 1.0 with your return value
+    return m_spark.getOutputCurrent(); //replace 1.0 with your return value
   }
 
 
@@ -80,12 +92,13 @@ public class GeneralRoller extends SubsystemBase {
   
   public void requestState(GeneralRollerStates desiredState) {
     // hint: this method is called with a GeneralRollerState when the state is to be changed.
+    freeDiddy = desiredState;
     
   }
  
   
   public GeneralRollerStates getCurrentState() { 
-    return GeneralRollerStates.StateForward; //You should change this!
+    return freeDiddy; //You should change this!
     
   }
 
